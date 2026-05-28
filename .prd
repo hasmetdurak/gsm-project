@@ -2,7 +2,7 @@
 
 ## Proje Adı: GSM (Global Scalable Matrix / Global System Management)
 ## Tarih: 2026-05-29
-## Sürüm: 1.0.3-MVP
+## Sürüm: 1.0.4-MVP
 
 ---
 
@@ -15,6 +15,7 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - **Orkestrasyon:** Dokploy ve genel VPS servislerine tam uyumlu `docker-compose.yml` yapılandırılması sağlandı.
 - **Kullanıcı Arayüzü (Frontend):** Ağır JS kütüphaneleri (React, Vue vb.) yerine saf HTML5, can alıcı karanlık mod (sleek dark mode) ve cam efekti (glassmorphism) temalı modern CSS ve asenkron veri çeken vanilla JS kullanıldı.
 - **CI/CD Pipeline:** GitHub Actions kullanılarak, her push/pull request işleminde Go kod kalitesi testlerini koşan, Docker derlemesini simüle eden (dry-run) ve Dokploy VPS dağıtım webhook'unu tetikleyen otomasyon sistemi eklendi.
+- **Dallanma Yapısı (Branching):** Dokploy ve genel modern DevOps standartları ile tam uyum sağlamak için projenin varsayılan dalı `master` dalından **`main`** dalına otonom olarak taşınmıştır.
 
 ### 3. Yapılan Değişiklikler ve Kronolojik Gelişmeler
 - **28.05.2026 - 15:49:** `C:\Users\hasme\Desktop\gsm-project` dizini oluşturuldu.
@@ -31,6 +32,7 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - **28.05.2026 - 15:56:** GitHub Actions CI/CD otomatik dağıtım workflow'u (`.github/workflows/deploy.yml`) oluşturuldu ve Dokploy webhook tetikleme yapısı kuruldu.
 - **29.05.2026 - 00:18:** VPS/Dokploy dağıtım aşamasında karşılaşılan Git Provider hatası analiz edildi ve çözüm dökümantasyonu PRD'ye işlendi.
 - **29.05.2026 - 00:26:** Dokploy üzerindeki build hatası (`go: go.mod requires go >= 1.24.5`) çözüldü. Dockerfile içerisindeki Go base builder imajı `golang:1.24-alpine` olarak güncellendi.
+- **29.05.2026 - 00:27:** Proje varsayılan dalı `master`'dan `main`'e geçirildi ve GitHub'a pushlandı. Dokploy deploy webhook tetikleme süreçleri ve `Branch Not Match` hatası analiz edildi.
 
 ---
 
@@ -43,12 +45,17 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 *   **Sebep:** Dockerfile içinde Go 1.21 alpine base image tanımlıyken, go.mod dosyasının en güncel Go 1.24.5 sürümünü gereksinmesi.
 *   **Çözüm:** Dockerfile'daki `golang:1.21-alpine` ifadesi `golang:1.24-alpine` ile değiştirilerek derleme hatası giderildi (Başarılı).
 
+#### **Hata 3:** Deploy Webhook Tetiklendiğinde `{"message":"Branch Not Match"}` Hatası Alınması
+*   **Sebep:** Lokal git dalının `master` olup, Dokploy tarafındaki uygulamanın `main` (veya başka bir) dalı dinlemesi; ya da manuel tetiklemede zengin GitHub push payload'u olmaması nedeniyle Dokploy'un dalı eşleştirememesi.
+*   **Çözüm:** Lokal git dalı otonom olarak `main` dalına taşındı ve GitHub'a `main` dalı olarak pushlandı. Eğer Dokploy GitHub entegrasyonu aktifse bu push işlemi Dokploy'u otomatik tetiklemiştir. Manuel tetikleme yapılacaksa Dokploy panelinde tanımlanan aktif branch adı kontrol edilmelidir.
+
 ---
 
 ### 5. Sonraki Planlanan Geliştirmeler (Gelecek Yol Haritası)
 - [x] Patron tarafından Hetzner VPS alınması ve Dokploy kurulumu.
 - [x] Git Provider hatasının çözülmesi.
 - [x] Dockerfile Go sürüm uyuşmazlığı hatasının giderilmesi.
+- [x] Git dal yapısının `main` olarak modernize edilmesi ve deponun güncellenmesi.
 - [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 - [ ] Asenkron kuyruk (Queue) mekanizmasının Redis entegrasyonu ile daha geniş ölçekli hale getirilmesi.
 - [ ] WebSocket tabanlı anlık gerçek zamanlı (real-time) çift yönlü haberleşme katmanının eklenmesi.
