@@ -37,12 +37,11 @@ Bu dosya, GSM projesi üzerinde gerçekleştirilen tüm DevOps, mimari ve yazıl
   - [x] `internal/models/user.go` modelleri tanımlandı.
   - [x] `internal/database/postgres.go` yüksek performanslı bağlantı havuzu kodlandı.
   - [x] `internal/auth/oauth.go` Google OAuth ve otomatik token rotasyon mantığı yazıldı.
-  - [x] `internal/middleware/quota.go` Premium/Free ayrımına dayalı, günlük 100 işlem limitli ve asenkron log tutan kota middleware'i kodlandı.
-  - [x] `main.go` ve `server/router.go` dosyaları yeni entegrasyonlar, rotalar ve korumalı MCP servisleri ile güncellendi.
-  - [x] `docker-compose.yml` PostgreSQL orkestrasyonu, volume tanımları ve environment yapıları ile baştan aşağı yenilendi.
-  - [x] Dockerfile içerisindeki Go sürümü pgx/v5 kütüphane gereksinimi nedeniyle Go 1.25'e yükseltildi.
+  - [x] `internal/middleware/quota.go` Premium/Free ayrımına dayalı günlük 100 işlem limitli kota middleware'i geliştirildi.
+  - [x] `main.go` ve `server/router.go` dosyaları güncellendi.
+  - [x] **Dışa Aktarılmış/Bağımsız PostgreSQL Bağlantısı:** docker-compose.yml dosyasındaki lokal veritabanı kaldırıldı, `gsm-service` doğrudan patronun oluşturduğu bağımsız Dokploy PostgreSQL servisine (`gsm-postgresql-uw0km3`) bağlanacak şekilde orkestre edildi.
   - [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 
 ---
 
-*Son Güncelleme: 29.05.2026 00:45 - AI Geliştirici Ekibi (Antigravity)*
+*Son Güncelleme: 29.05.2026 00:48 - AI Geliştirici Ekibi (Antigravity)*
