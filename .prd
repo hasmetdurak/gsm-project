@@ -2,7 +2,7 @@
 
 ## Proje Adı: GSM (Global Scalable Matrix / Global System Management)
 ## Tarih: 2026-05-29
-## Sürüm: 1.0.2-MVP
+## Sürüm: 1.0.3-MVP
 
 ---
 
@@ -11,7 +11,7 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 
 ### 2. Teknik Mimari Kararları
 - **Programlama Dili:** Go (Golang) - Hafiflik, asenkron kanallar (channels), goroutine desteği ve sıfır bağımlılıklı HTTP sunucusu için seçildi.
-- **Konteynerizasyon:** Çok aşamalı (Multistage) Dockerfile ile derleme aşaması ayrıştırıldı; 8080 portunu dışa açan, hafif Alpine Linux tabanlı minimal imaj oluşturuldu.
+- **Konteynerizasyon:** Çok aşamalı (Multistage) Dockerfile ile derleme aşaması ayrıştırıldı; 8080 portunu dışa açan, hafif Alpine Linux tabanlı minimal imaj oluşturuldu. (Derleyici Go sürümü uyumluluk amacıyla **Go 1.24.5** kararlı sürümüne yükseltildi).
 - **Orkestrasyon:** Dokploy ve genel VPS servislerine tam uyumlu `docker-compose.yml` yapılandırılması sağlandı.
 - **Kullanıcı Arayüzü (Frontend):** Ağır JS kütüphaneleri (React, Vue vb.) yerine saf HTML5, can alıcı karanlık mod (sleek dark mode) ve cam efekti (glassmorphism) temalı modern CSS ve asenkron veri çeken vanilla JS kullanıldı.
 - **CI/CD Pipeline:** GitHub Actions kullanılarak, her push/pull request işleminde Go kod kalitesi testlerini koşan, Docker derlemesini simüle eden (dry-run) ve Dokploy VPS dağıtım webhook'unu tetikleyen otomasyon sistemi eklendi.
@@ -30,20 +30,25 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - **28.05.2026 - 15:56:** Yerel ortamda Docker testleri başlatıldı (yerel makinede Docker yüklü olmadığından mantıksal testler Go derleme seviyesinde yapıldı).
 - **28.05.2026 - 15:56:** GitHub Actions CI/CD otomatik dağıtım workflow'u (`.github/workflows/deploy.yml`) oluşturuldu ve Dokploy webhook tetikleme yapısı kuruldu.
 - **29.05.2026 - 00:18:** VPS/Dokploy dağıtım aşamasında karşılaşılan Git Provider hatası analiz edildi ve çözüm dökümantasyonu PRD'ye işlendi.
+- **29.05.2026 - 00:26:** Dokploy üzerindeki build hatası (`go: go.mod requires go >= 1.24.5`) çözüldü. Dockerfile içerisindeki Go base builder imajı `golang:1.24-alpine` olarak güncellendi.
 
 ---
 
 ### 4. Karşılaşılan Sorunlar ve Çözümler
-#### **Hata:** `Error: ❌ Github Provider not found`
-*   **Sebep:** Dokploy panelinde GitHub App entegrasyonunun veya ilgili git sağlayıcısının (Personal Access Token / SSH) yapılandırılmamış olması.
-*   **Çözüm A (Önerilen - GitHub App):** Dokploy panelinden *Settings -> GitHub -> Create GitHub App* adımları takip edilerek Dokploy'a GitHub izni verilmesi.
-*   **Çözüm B (Hızlı Alternatif - Git HTTPS):** Repo public olduğu için, Dokploy üzerinde uygulama oluştururken kaynak tipi olarak "GitHub App" yerine **"Git"** seçilerek doğrudan `https://github.com/hasmetdurak/gsm-project` adresinin verilmesi.
+#### **Hata 1:** `Error: ❌ Github Provider not found`
+*   **Sebep:** Dokploy panelinde GitHub App entegrasyonunun yapılandırılmamış olması.
+*   **Çözüm:** Dokploy üzerinde kaynak tipi "Git" seçilerek doğrudan HTTPS repo URL'si ile dağıtım tetiklendi (Başarılı).
+
+#### **Hata 2:** `go: go.mod requires go >= 1.24.5 (running go 1.21.13)`
+*   **Sebep:** Dockerfile içinde Go 1.21 alpine base image tanımlıyken, go.mod dosyasının en güncel Go 1.24.5 sürümünü gereksinmesi.
+*   **Çözüm:** Dockerfile'daki `golang:1.21-alpine` ifadesi `golang:1.24-alpine` ile değiştirilerek derleme hatası giderildi (Başarılı).
 
 ---
 
 ### 5. Sonraki Planlanan Geliştirmeler (Gelecek Yol Haritası)
 - [x] Patron tarafından Hetzner VPS alınması ve Dokploy kurulumu.
-- [x] Git Provider hatasının analiz edilmesi ve çözümünün sunulması.
-- [ ] Docker konteynerinin VPS (Dokploy) üzerinde ilk canlı dağıtımının gerçekleştirilmesi.
+- [x] Git Provider hatasının çözülmesi.
+- [x] Dockerfile Go sürüm uyuşmazlığı hatasının giderilmesi.
+- [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 - [ ] Asenkron kuyruk (Queue) mekanizmasının Redis entegrasyonu ile daha geniş ölçekli hale getirilmesi.
 - [ ] WebSocket tabanlı anlık gerçek zamanlı (real-time) çift yönlü haberleşme katmanının eklenmesi.

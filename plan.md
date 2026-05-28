@@ -30,8 +30,10 @@ Bu dosya, GSM projesi üzerinde gerçekleştirilen tüm DevOps, mimari ve yazıl
 - [x] **VPS Dağıtımı ve Sorun Giderme (Troubleshooting)**
   - [x] Hetzner VPS üzerine Dokploy kurulumunun tamamlanması.
   - [x] Dağıtım esnasında oluşan `Github Provider not found` hatasının çözümü için kılavuz hazırlanması.
-  - [ ] Hata çözümleri uygulanarak uygulamanın Dokploy VPS'e başarıyla deploy edilmesi.
+  - [x] **Dockerfile Go Sürüm Uyumsuzluğu Giderildi:** Dockerfile'daki base builder imajı Go 1.24.5 ile tam uyumlu olması için `golang:1.24-alpine` sürümüne yükseltildi.
+  - [x] Değişikliklerin `fix: upgrade golang builder image to 1.24` mesajıyla GitHub'a pushlanması.
+  - [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 
 ---
 
-*Son Güncelleme: 29.05.2026 00:19 - AI Geliştirici Ekibi (Antigravity)*
+*Son Güncelleme: 29.05.2026 00:26 - AI Geliştirici Ekibi (Antigravity)*
