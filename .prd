@@ -2,7 +2,7 @@
 
 ## Proje Adı: GSM (Global Scalable Matrix / Global System Management)
 ## Tarih: 2026-05-28
-## Sürüm: 1.0.0-MVP
+## Sürüm: 1.0.1-MVP
 
 ---
 
@@ -14,6 +14,7 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - **Konteynerizasyon:** Çok aşamalı (Multistage) Dockerfile ile derleme aşaması ayrıştırıldı; 8080 portunu dışa açan, hafif Alpine Linux tabanlı minimal imaj oluşturuldu.
 - **Orkestrasyon:** Dokploy ve genel VPS servislerine tam uyumlu `docker-compose.yml` yapılandırılması sağlandı.
 - **Kullanıcı Arayüzü (Frontend):** Ağır JS kütüphaneleri (React, Vue vb.) yerine saf HTML5, can alıcı karanlık mod (sleek dark mode) ve cam efekti (glassmorphism) temalı modern CSS ve asenkron veri çeken vanilla JS kullanıldı.
+- **CI/CD Pipeline:** GitHub Actions kullanılarak, her push/pull request işleminde Go kod kalitesi testlerini koşan, Docker derlemesini simüle eden (dry-run) ve Dokploy VPS dağıtım webhook'unu tetikleyen otomasyon sistemi eklendi.
 
 ### 3. Yapılan Değişiklikler ve Kronolojik Gelişmeler
 - **28.05.2026 - 15:49:** `C:\Users\hasme\Desktop\gsm-project` dizini oluşturuldu.
@@ -23,14 +24,17 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - **28.05.2026 - 15:50:** Go modülü `go mod init gsm` komutuyla başlatıldı.
 - **28.05.2026 - 15:50:** `core/matrix.go` içinde asenkron olay motoru ve metrik üretici döngü kodlandı.
 - **28.05.2026 - 15:50:** `server/router.go` içinde HTTP sunucusu, loglama & CORS ara katmanları ve API uç noktaları tasarlandı.
-- **28.05.2026 - 15:50:** `main.go` üzerinde sunucu bootloader'ı ve kibar kapatma (graceful shutdown) mekanizması kuruldu.
+- **28.05.2026 - 15:50:** `main.go` üzerinde sunucu bootloader'ı ve graceful shutdown mekanizması kuruldu.
 - **28.05.2026 - 15:50:** `frontend/` klasörü altında CSS Glassmorphic tasarım diliyle kodlanmış, asenkron grafik ve log akışı paneli (index.html, index.css, app.js) tamamlandı.
 - **28.05.2026 - 15:50:** Çok aşamalı optimize `Dockerfile` ve VPS uyumlu `docker-compose.yml` DevOps orkestrasyonu tamamlandı.
+- **28.05.2026 - 15:56:** Yerel ortamda Docker testleri başlatıldı (yerel makinede Docker yüklü olmadığından mantıksal testler Go derleme seviyesinde yapıldı).
+- **28.05.2026 - 15:56:** GitHub Actions CI/CD otomatik dağıtım workflow'u (`.github/workflows/deploy.yml`) oluşturuldu ve Dokploy webhook tetikleme yapısı kuruldu.
 
 ---
 
 ### 4. Sonraki Planlanan Geliştirmeler (Gelecek Yol Haritası)
-- [ ] Patron tarafından sağlanacak GitHub Uzak Depo (Remote Origin) bağlantısının kurulması.
-- [ ] Docker konteynerinin VPS üzerinde ilk ayağa kaldırılma testinin gerçekleştirilmesi.
+- [x] Patron tarafından sağlanacak GitHub Uzak Depo (Remote Origin) bağlantısının kurulması ve pushlanması.
+- [x] CI/CD (GitHub Actions) otomatik dağıtım workflow'unun kurulması.
+- [ ] Docker konteynerinin VPS (Dokploy) üzerinde ilk canlı dağıtımının gerçekleştirilmesi.
 - [ ] Asenkron kuyruk (Queue) mekanizmasının Redis entegrasyonu ile daha geniş ölçekli hale getirilmesi.
 - [ ] WebSocket tabanlı anlık gerçek zamanlı (real-time) çift yönlü haberleşme katmanının eklenmesi.
