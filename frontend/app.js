@@ -1,9 +1,15 @@
-// GSM (Global Scalable Matrix) Real-time Control Center Logic
+// GSM (Global Scalable Matrix) Real-time Control Center & Landing Page Logic
 
-const API_BASE = window.location.origin; // Aynı sunucu üzerinden servis ediliyor
+const API_BASE = window.location.origin;
 let updateInterval = null;
 
-// DOM Elemanları
+// DOM Elemanları - Landing Page
+const landingSection = document.getElementById('landing-section');
+const responsibilityCheck = document.getElementById('responsibility-check');
+const googleConnectBtn = document.getElementById('google-connect-btn');
+
+// DOM Elemanları - Dashboard
+const dashboardSection = document.getElementById('dashboard-section');
 const systemStatusBadge = document.getElementById('system-status');
 const metricCpu = document.getElementById('metric-cpu');
 const metricMem = document.getElementById('metric-mem');
@@ -19,10 +25,50 @@ const btnClearFeed = document.getElementById('btn-clear-feed');
 
 // Başlangıç Kurulumları
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Session Durumuna göre UI Seçimi
+    const sessionToken = getCookie("gsm_session");
+    
+    if (sessionToken) {
+        // Giriş yapılmış: Dashboard'a geç
+        landingSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        
+        initializeDashboard();
+    } else {
+        // Giriş yapılmamış: Landing Page göster
+        landingSection.classList.remove('hidden');
+        dashboardSection.classList.add('hidden');
+        
+        initializeLandingPage();
+    }
+});
+
+// --- LANDING PAGE MANTIĞI ---
+
+function initializeLandingPage() {
+    // Checkbox durumuna göre butonu aktifleştirme dinleyicisi
+    responsibilityCheck.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            // Aktif State (Smooth Google SSO Styling)
+            googleConnectBtn.classList.remove('pointer-events-none', 'text-slate-500', 'bg-slate-800/40');
+            googleConnectBtn.classList.add('text-slate-900', 'bg-white', 'hover:bg-slate-100', 'border-white');
+            googleConnectBtn.style.boxShadow = "0 10px 25px rgba(255, 255, 255, 0.08), 0 0 20px rgba(66, 133, 244, 0.15)";
+        } else {
+            // Pasif State (Disabled)
+            googleConnectBtn.classList.add('pointer-events-none', 'text-slate-500', 'bg-slate-800/40');
+            googleConnectBtn.classList.remove('text-slate-900', 'bg-white', 'hover:bg-slate-100', 'border-white');
+            googleConnectBtn.style.boxShadow = "none";
+        }
+    });
+}
+
+// --- DASHBOARD MANTIĞI ---
+
+function initializeDashboard() {
     checkSystemStatus();
     fetchEvents();
     
-    // Düzenli olarak metrikleri ve olayları güncelle (Asenkron Döngü)
+    // Düzenli asenkron metrik güncelleme döngüsü (2.5 saniyede bir)
     updateInterval = setInterval(() => {
         checkSystemStatus();
         fetchEvents();
@@ -31,9 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Dinleyicileri
     btnPublish.addEventListener('click', injectEvent);
     btnClearFeed.addEventListener('click', () => {
-        streamContainer.innerHTML = '<div class="stream-placeholder">Stream cleared. Waiting for events...</div>';
+        streamContainer.innerHTML = '<div class="text-slate-500 italic text-center py-10">Stream cleared. Waiting for events...</div>';
     });
-});
+}
 
 // Sistem Bağlantı Durumu Kontrolü
 async function checkSystemStatus() {
@@ -45,7 +91,7 @@ async function checkSystemStatus() {
         if (response.ok) {
             const data = await response.json();
             systemStatusBadge.textContent = "OPERATIONAL";
-            systemStatusBadge.className = "status-badge connected";
+            systemStatusBadge.className = "text-xs font-bold px-3 py-1.5 rounded-full bg-google-green/10 border border-google-green/30 text-google-green";
             metricPing.textContent = `${duration} ms`;
         } else {
             setDisconnectedState();
@@ -57,8 +103,15 @@ async function checkSystemStatus() {
 
 function setDisconnectedState() {
     systemStatusBadge.textContent = "OFFLINE";
-    systemStatusBadge.className = "status-badge";
+    systemStatusBadge.className = "text-xs font-bold px-3 py-1.5 rounded-full bg-google-red/10 border border-google-red/30 text-google-red";
     metricPing.textContent = "-- ms";
+    
+    // Eğer oturum sunucu tarafında kapandıysa landing page'e geri atalım (Güvenlik)
+    const sessionToken = getCookie("gsm_session");
+    if (!sessionToken) {
+        clearInterval(updateInterval);
+        window.location.reload();
+    }
 }
 
 // Olayları Çekme ve Ekrana Basma
@@ -70,7 +123,7 @@ async function fetchEvents() {
         const events = await response.json();
         if (events && events.length > 0) {
             renderEventStream(events);
-            // En son sistem metriğini yakalayıp kartları güncelle
+            // En son sistem metriğini alıp barları güncelle
             const systemTicks = events.filter(e => e.type === 'SYSTEM_METRIC_TICK');
             if (systemTicks.length > 0) {
                 const latestTick = systemTicks[systemTicks.length - 1];
@@ -82,7 +135,7 @@ async function fetchEvents() {
     }
 }
 
-// Metrik Kartlarının Güncellenmesi (Mikro-Animasyon ve Değerler)
+// Metrik Kartlarının Güncellenmesi (Barlar ve Yazılar)
 function updateMetricsUI(payload) {
     if (!payload) return;
     
@@ -93,7 +146,7 @@ function updateMetricsUI(payload) {
     metricCpu.textContent = `${cpuVal.toFixed(1)}%`;
     cpuBar.style.width = `${cpuVal}%`;
 
-    // 16GB üzerinden doluluk hesaplayalım (örnek)
+    // 16GB RAM üzerinden doluluk hesaplama
     const memPercent = ((16 - memVal) / 16) * 100;
     metricMem.textContent = `${(16 - memVal).toFixed(1)} / 16 GB`;
     memBar.style.width = `${memPercent}%`;
@@ -101,36 +154,36 @@ function updateMetricsUI(payload) {
     metricNodes.textContent = nodesVal;
 }
 
-// Canlı Akış Renderlama
+// Olay Akışı Log Gösterimi
 function renderEventStream(events) {
-    // Mevcut listenin son halini render edelim
     streamContainer.innerHTML = '';
     
     events.slice().reverse().forEach(event => {
         const logCard = document.createElement('div');
-        let logClass = 'event-log';
-        if (event.type.includes('SYSTEM')) {
-            logClass += ' system';
-        } else {
-            logClass += ' custom';
-        }
+        logCard.className = "bg-slate-900/60 border-l-2 p-3 rounded-r-lg font-mono text-[11px] flex flex-col gap-1.5 animation-slide-in";
         
-        logCard.className = logClass;
+        if (event.type.includes('SYSTEM')) {
+            logCard.classList.add('border-google-green');
+        } else if (event.type.includes('CUSTOM')) {
+            logCard.classList.add('border-google-blue');
+        } else {
+            logCard.classList.add('border-google-yellow');
+        }
         
         const timestamp = new Date(event.timestamp).toLocaleTimeString();
         
         logCard.innerHTML = `
-            <div class="log-meta">
-                <span class="log-type">${event.type}</span>
-                <span class="log-time">${timestamp}</span>
+            <div class="flex justify-between text-slate-500 text-[10px]">
+                <span class="font-bold text-slate-300">${event.type}</span>
+                <span>${timestamp}</span>
             </div>
-            <div class="log-payload">${JSON.stringify(event.payload, null, 2)}</div>
+            <div class="text-indigo-300 overflow-x-auto whitespace-pre">${JSON.stringify(event.payload, null, 2)}</div>
         `;
         streamContainer.appendChild(logCard);
     });
 }
 
-// Yeni Olay Enjekte Etme
+// Manuel Olay Yayınlama
 async function injectEvent() {
     const type = eventTypeInput.value.trim();
     let payload = {};
@@ -157,11 +210,9 @@ async function injectEvent() {
         });
 
         if (response.ok) {
-            // Butona basıldığında mikro-animasyon tetikle
-            btnPublish.style.transform = 'scale(0.95)';
+            // Butona basıldığında mikro-küçülme efekti
+            btnPublish.style.transform = 'scale(0.98)';
             setTimeout(() => btnPublish.style.transform = 'none', 100);
-            
-            // Olayları anında tazele
             fetchEvents();
         } else {
             alert("Failed to inject event into Matrix");
@@ -169,4 +220,11 @@ async function injectEvent() {
     } catch (error) {
         console.error("Error injecting event:", error);
     }
+}
+
+// Yardımcı Fonksiyon: Cookie (Çerez) Okuma
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
 }

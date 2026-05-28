@@ -2,24 +2,33 @@
 
 ## Proje Adı: GSM (Global Scalable Matrix / Global System Management)
 ## Tarih: 2026-05-29
-## Sürüm: 1.1.1-SaaS (Ticari Sürüm Bootstrap - Harici Veritabanı Entegrasyonu)
+## Sürüm: 1.2.0-SaaS (Ticari Sürüm Bootstrap - Premium Landing Page & Entegre SPA Arayüzü)
 
 ---
 
 ### 1. Vizyon ve Genel Bakış
-GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir sistem yönetim altyapısından, kullanıcıların Google hesaplarını tek tıkla entegre edebileceği (OAuth2), yapay zeka (Gemini/Claude) asistanlarına Google Sheets, Docs ve Gmail yetenekleri kazandırabileceği ticari bir SaaS platformuna (`gsm.app`) dönüştürülmüştür.
+GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir sistem yönetim altyapısından, kullanıcıların Google hesaplarını tek tıkla entegre edebileceği (OAuth2), yapay zeka (Gemini/Claude) asistanlarına Google Sheets, Docs ve Gmail yetenekleri kazandırabileceği ticari bir SaaS platformuna (`gsm.app` veya `googlesuitemcp.com`) dönüştürülmüştür.
 
-Sistemi tamamen otonom hale getirmek, kullanıcı kullanım kotalarını takip etmek ve Freemium/Premium modelini oturtmak amacıyla Dokploy üzerinde bağımsız çalışan PostgreSQL veritabanı entegre edilmiştir.
+Kullanıcılara güven veren üst düzey bir karşılama sunmak ve oturum açıldıktan sonra Matrix Dashboard'a pürüzsüz geçiş sağlamak için tek sayfalık (SPA) Premium İngilizce Landing Page ve kontrol paneli entegrasyonu tamamlanmıştır.
 
 ### 2. Teknik Mimari Kararları
 - **Programlama Dili:** Go (Golang) - Hafiflik, asenkron kanallar (channels), goroutine desteği ve sıfır bağımlılıklı HTTP sunucusu. (Pgx v5.9.2 entegrasyonunun yüksek Go sürümü gereksinimi sebebiyle base derleyici imajı **Go 1.25.0+ / Go 1.25-alpine** sürümüne yükseltilmiştir).
-- **Veritabanı Katmanı (Dahili/Harici PostgreSQL Entegrasyonu):** Dokploy üzerinde bağımsız bir servis olarak oluşturulan `gsm-postgresql-uw0km3` veritabanı bağlantısı kurulmuştur. Go uygulaması dahili ağ üzerinden bu veritabanına bağlanır, böylece Docker orkestrasyonu içinde ekstradan bir DB konteyneri barındırma ihtiyacı ortadan kaldırılmış ve VPS kaynak tüketimi maksimize edilmiştir.
+- **Arayüz Tasarım Sistemi (Tailwind CSS & Google Accent Colors):**
+  - **Tasarım Dili:** Executive Dark Mode (Derin uzay/mavi arka plan `#0B0F19`).
+  - **Marka Entegrasyonu:** Google'ın imzası olan kurumsal renkler (#4285F4 Blue, #EA4335 Red, #FBBC05 Yellow, #34A853 Green) butonlar, durum rozetleri, çerçeveler ve ince parlayan gradyan çizgilerde asil bir geliştirici aracı havası vermek için kullanılmıştır.
+- **Tek Sayfalı Uygulama (SPA) Geçiş Mekanizması:**
+  - Kullanıcı platforma ilk girdiğinde `gsm_session` cookie'si (çerezi) taranır.
+  - **Oturum yoksa:** Kullanıcıya premium, responsiv, Google SSO entegrasyonlu İngilizce Landing Page gösterilir.
+  - **Oturum varsa:** Landing Page görünmez yapılarak anlık metriklerin ve olay akışlarının canlı güncellendiği asenkron Matrix Control Center (Dashboard) görünümüne geçiş yapılır.
+- **Hukuki Sorumluluk ve Google SSO Buton Kontrolü:**
+  - Landing Page üzerinde kullanıcıların yapay zeka tarafından yapılacak silme/güncelleme eylemlerinin hukuki sorumluluğunu üstlendiklerini beyan eden bir checkbox bulunur.
+  - Checkbox işaretlenene kadar Google Connect butonu pasif (disabled, `pointer-events-none`) tutulur. İşaretlendiğinde ise Tailwind animasyonlarıyla pürüzsüz bir şekilde parlayan beyaz/mavi Google SSO butonu formuna bürünür.
+- **Veritabanı Katmanı (Dahili/Harici PostgreSQL Entegrasyonu):** Dokploy üzerinde bağımsız çalışan `gsm-postgresql-uw0km3` veritabanı bağlantısı `pgxpool` ile kurulmuştur. Go uygulaması dahili ağ üzerinden bu veritabanına bağlanır, böylece Docker orkestrasyonu içinde ekstradan bir DB konteyneri barındırma ihtiyacı ortadan kaldırılmış ve VPS kaynak tüketimi maksimize edilmiştir.
 - **Google OAuth 2.0 & Token Rotasyonu:** Kullanıcının çalışma akışının kesilmemesi için `token_expiry` zamanı dolmaya yakınken (2 dakikadan az kaldığında) arka planda otomatik olarak `refresh_token` kullanarak yeni `access_token` alan ve veritabanını güncelleyen asenkron dostu rotasyon motoru tasarlanmıştır (`RefreshTokenIfNeeded`).
 - **Kota Yönetim Middleware'i (`QuotaMiddleware`):**
   - **Premium Üyeler:** Herhangi bir engele veya kota sınırına takılmadan sınırsız istek hakkına sahiptir.
   - **Free Üyeler:** Son 24 saat içinde veritabanındaki `usage_logs` kaydı kontrol edilir. Eğer 100 işlem sınırına ulaştıysa işlem HTTP 423 (Locked) hatası ve temiz bir JSON hata mesajıyla engellenir.
   - **Asenkron Loglama:** Kota sınırı aşılmadıysa işlem başarıyla gerçekleştirilir ve hemen ardından asenkron olarak (goroutine üzerinden ana thread'i tıkamadan) veritabanına `usage_logs` kaydı eklenir.
-- **Konteynerizasyon ve Orkestrasyon:** Dokploy VPS ortamında bağımsız PostgreSQL servisi kullanıldığı için `docker-compose.yml` dosyasındaki lokal DB servisi kaldırılmış ve Go uygulaması `DATABASE_URL=postgres://postgres:wzfvbo047begspmu@gsm-postgresql-uw0km3:5432/postgres?sslmode=disable` adresine bağlanacak şekilde güncellenmiştir.
 
 ### 3. Yapılan Değişiklikler ve Kronolojik Gelişmeler
 - **28.05.2026 - 15:49:** `C:\Users\hasme\Desktop\gsm-project` dizini oluşturuldu.
@@ -38,7 +47,11 @@ Sistemi tamamen otonom hale getirmek, kullanıcı kullanım kotalarını takip e
 - **29.05.2026 - 00:26:** Dokploy üzerindeki build hatası (`go: go.mod requires go >= 1.24.5`) çözüldü. Dockerfile içerisindeki Go base builder imajı `golang:1.24-alpine` olarak güncellendi.
 - **29.05.2026 - 00:27:** Proje varsayılan dalı `master`'dan `main`'e geçirildi ve GitHub'a pushlandı. Dokploy deploy webhook tetikleme süreçleri ve `Branch Not Match` hatası analiz edildi.
 - **29.05.2026 - 00:44:** **GSM SaaS Ticari Dönüşüm Yapılandırması Gerçekleştirildi:** Veritabanı şeması oluşturuldu, OAuth 2.0 token rotasyonu ve kota middleware'i entegre edildi.
-- **29.05.2026 - 00:48:** **Bağımsız Dokploy PostgreSQL Entegrasyonu:** Patron tarafından VPS'te oluşturulan harici veritabanı bilgileri sisteme dahil edildi. `docker-compose.yml` dosyasındaki lokal DB kaldırıldı ve `gsm-service` doğrudan bu yeni veritabanına bağlanacak şekilde optimize edildi.
+- **29.05.2026 - 00:48:** **Bağımsız Dokploy PostgreSQL Entegrasyonu:** `docker-compose.yml` güncellenerek harici/bağımsız Dokploy PostgreSQL veritabanı bağlantısı entegre edildi.
+- **29.05.2026 - 00:52:** **Premium Kurumsal İngilizce Landing Page ve SPA Entegrasyonu:**
+  *   `frontend/index.html` dosyası Tailwind CSS, Google marka renkleri ve Inter fontuyla baştan yazıldı.
+  *   `responsibility-check` kontrolü ve dinamik Google Connect SSO buton animasyonları JS'e döküldü.
+  *   Kullanıcı çerezine bağlı olarak Landing Page ile Matrix Dashboard arasında pürüzsüz geçiş sağlayan SPA yapısı `frontend/app.js` üzerinde tamamlandı.
 
 ---
 
@@ -53,7 +66,8 @@ Sistemi tamamen otonom hale getirmek, kullanıcı kullanım kotalarını takip e
 - [x] Dockerfile Go sürüm uyuşmazlığı hatasının giderilmesi.
 - [x] Git dal yapısının `main` olarak modernize edilmesi ve deponun güncellenmesi.
 - [x] PostgreSQL, Google OAuth2, Token Rotasyonu ve Kota Middleware SaaS Entegrasyonu.
-- [x] **Bağımsız Dokploy PostgreSQL veritabanının `gsm-service`'e bağlanması.**
+- [x] Bağımsız Dokploy PostgreSQL veritabanının `gsm-service`'e bağlanması.
+- [x] **Premium Kurumsal İngilizce Landing Page ve Dinamik SPA Arayüz Entegrasyonu.**
 - [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 - [ ] Asenkron kuyruk (Queue) mekanizmasının Redis entegrasyonu ile daha geniş ölçekli hale getirilmesi.
 - [ ] WebSocket tabanlı anlık gerçek zamanlı (real-time) çift yönlü haberleşme katmanının eklenmesi.

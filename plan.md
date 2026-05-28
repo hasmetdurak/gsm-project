@@ -39,9 +39,13 @@ Bu dosya, GSM projesi üzerinde gerçekleştirilen tüm DevOps, mimari ve yazıl
   - [x] `internal/auth/oauth.go` Google OAuth ve otomatik token rotasyon mantığı yazıldı.
   - [x] `internal/middleware/quota.go` Premium/Free ayrımına dayalı günlük 100 işlem limitli kota middleware'i geliştirildi.
   - [x] `main.go` ve `server/router.go` dosyaları güncellendi.
-  - [x] **Dışa Aktarılmış/Bağımsız PostgreSQL Bağlantısı:** docker-compose.yml dosyasındaki lokal veritabanı kaldırıldı, `gsm-service` doğrudan patronun oluşturduğu bağımsız Dokploy PostgreSQL servisine (`gsm-postgresql-uw0km3`) bağlanacak şekilde orkestre edildi.
+  - [x] **Dışa Aktarılmış/Bağımsız PostgreSQL Bağlantısı:** docker-compose.yml veritabanı bağlantısı harici postgres servisiyle entegre edildi.
+- [x] **Premium İngilizce Landing Page & SPA Entegrasyonu**
+  - [x] `frontend/index.html` dosyası Tailwind CSS, Google Accent renkleri ve premium koyu mod ile baştan yazıldı.
+  - [x] Hukuki sorumluluk checkbox'ı ve Google Connect SSO dinamik buton animasyonları JavaScript ile kodlandı.
+  - [x] `gsm_session` cookie durumuna bağlı olarak Landing Page ile Matrix Control Center arasında pürüzsüz geçiş sağlayan dinamik SPA mimarisi `frontend/app.js` üzerinde tamamlandı.
   - [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 
 ---
 
-*Son Güncelleme: 29.05.2026 00:48 - AI Geliştirici Ekibi (Antigravity)*
+*Son Güncelleme: 29.05.2026 00:52 - AI Geliştirici Ekibi (Antigravity)*

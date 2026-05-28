@@ -3,106 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSM // Matrix Control Center</title>
-    <!-- Google Fonts: Outfit -->
+    <title>GSM // Google Suite Model Context Protocol Bridge</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        google: {
+                            blue: '#4285F4',
+                            red: '#EA4335',
+                            yellow: '#FBBC05',
+                            green: '#34A853',
+                        },
+                        slate: {
+                            950: '#0B0F19',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 102, 241, 0.12);
+        }
+        .google-bottom-line {
+            background: linear-gradient(to right, #4285F4 25%, #EA4335 25%, #EA4335 50%, #FBBC05 50%, #FBBC05 75%, #34A853 75%);
+        }
+    </style>
 </head>
-<body>
-    <div class="glass-bg"></div>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="logo-area">
-                <span class="pulse-indicator"></span>
-                <h1>GLOBAL SCALABLE MATRIX</h1>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans relative overflow-x-hidden selection:bg-google-blue selection:text-white">
+
+    <!-- Background glow gradients -->
+    <div class="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-indigo-950/20 to-transparent -z-10 pointer-events-none"></div>
+    <div class="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-google-blue/10 blur-[150px] rounded-full -z-10 pointer-events-none"></div>
+
+    <!-- 1. LANDING PAGE SECTION (Visible when unauthorized) -->
+    <div id="landing-section" class="transition-opacity duration-500">
+        <!-- Navigation Bar -->
+        <nav class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center border-b border-slate-900">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-google-blue flex items-center justify-center font-outfit font-extrabold text-white text-lg tracking-wider">G</div>
+                <span class="font-outfit font-bold text-xl tracking-wider bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">GOOGLE SUITE MCP</span>
             </div>
-            <div class="status-badge" id="system-status">
-                <span class="badge-text">CONNECTING</span>
+            <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-400">
+                <a href="#features" class="hover:text-google-blue transition-colors">Features</a>
+                <a href="#security" class="hover:text-google-blue transition-colors">Security</a>
+                <a href="#pricing" class="hover:text-google-blue transition-colors">Pricing</a>
+                <a href="#contact" class="hover:text-google-blue transition-colors">Contact</a>
+            </div>
+            <div>
+                <a href="#pricing" class="text-xs font-semibold px-4 py-2 rounded-full border border-google-yellow/30 text-google-yellow bg-google-yellow/5 hover:bg-google-yellow/10 transition-all">PREMIUM ACTIVE</a>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
+            <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-800/80 mb-8 text-xs font-semibold text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-google-green animate-pulse"></span>
+                <span>Production Ready v1.1.0-SaaS</span>
+            </div>
+            
+            <h1 class="font-outfit text-5xl md:text-6xl font-extrabold tracking-tight leading-none mb-6">
+                Breathe Execution Into AI.<br>
+                <span class="bg-gradient-to-r from-google-blue via-google-green to-google-yellow bg-clip-text text-transparent">Connect Gemini to Google Suite.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-slate-400 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+                Empower your AI Agents with the hands and clearance to manage Google Sheets, Gmail, Docs, and Drive seamlessly. A secure, zero-knowledge bridge built for modern automation.
+            </p>
+
+            <!-- Legal Disclaimer & Consent Checkbox -->
+            <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800/80 max-w-xl mx-auto my-8 text-sm text-slate-300 shadow-2xl glass-panel relative overflow-hidden">
+                <label class="flex items-start cursor-pointer space-x-4">
+                    <input type="checkbox" id="responsibility-check" class="mt-1 rounded border-slate-700 bg-slate-950 text-google-blue focus:ring-google-blue/50 focus:ring-offset-slate-950 w-4 h-4 cursor-pointer transition-all">
+                    <span class="text-left text-slate-300 select-none leading-relaxed">
+                        I understand and agree that I am solely responsible for all actions, data modifications, or deletions executed by the AI model via this bridge. GSM operates strictly as a zero-knowledge data pipeline.
+                    </span>
+                </label>
+            </div>
+
+            <!-- The Action Button (Google SSO Custom Styled) -->
+            <div class="mt-8 flex justify-center">
+                <a href="/auth/google/login" id="google-connect-btn" class="relative group inline-flex items-center justify-center px-8 py-4 bg-slate-800/40 text-slate-500 font-bold rounded-xl border border-slate-700/50 shadow-xl pointer-events-none transition-all duration-300 overflow-hidden select-none hover:scale-[1.02] active:scale-[0.98]">
+                    <!-- Google colored bottom line (glow effect) -->
+                    <div class="absolute bottom-0 left-0 right-0 h-1 google-bottom-line opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                    <span class="mr-3 text-lg">🔑</span>
+                    <span>Connect with Google Account</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- About Us & Security Section -->
+        <section id="security" class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
+            <div class="grid md:grid-columns grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="text-xs font-bold text-google-blue tracking-widest uppercase block mb-3">Enterprise Governance</span>
+                    <h2 class="font-outfit text-3xl md:text-4xl font-extrabold mb-6 leading-tight">
+                        Privacy-First.<br>Zero-Knowledge Architecture.
+                    </h2>
+                    <p class="text-slate-400 leading-relaxed mb-6 font-light">
+                        Developed under **CLLSOFT LLC**, GSM is engineered with a strict data governance framework. We do not store, clone, or analyze your corporate data. Your Google OAuth tokens are heavily encrypted in isolated environments, serving strictly as a secure pipeline between your AI runtime and Google Workspace APIs.
+                    </p>
+                    <div class="flex items-center space-x-3 text-google-green text-sm font-semibold">
+                        <span>🛡️</span>
+                        <span>Zero data leaks. Maximum execution.</span>
+                    </div>
+                </div>
+                <!-- Interactive Security Shield Mockup -->
+                <div class="bg-slate-900/60 p-8 rounded-2xl border border-slate-800 glass-panel shadow-2xl relative overflow-hidden flex flex-col justify-center items-center text-center">
+                    <div class="w-16 h-16 rounded-full bg-google-green/10 flex items-center justify-center text-google-green text-3xl mb-6 shadow-inner animate-pulse">🔒</div>
+                    <h3 class="font-outfit text-xl font-bold mb-2">Isolated Token Sandbox</h3>
+                    <p class="text-xs text-slate-500 max-w-xs leading-relaxed">
+                        Access and refresh tokens are encrypted at rest with AES-GCM-256 and stored exclusively inside dedicated environment variables and private database segments.
+                    </p>
+                    <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-google-green/5 rounded-full blur-2xl"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="max-w-5xl mx-auto px-6 py-20 border-t border-slate-900 text-center">
+            <span class="text-xs font-bold text-google-yellow tracking-widest uppercase block mb-3">Pricing Matrix</span>
+            <h2 class="font-outfit text-3xl md:text-4xl font-extrabold mb-12">Scalable Plans for Global Automation</h2>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                <!-- Free Plan -->
+                <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800/80 glass-panel flex flex-col justify-between text-left transition-all hover:border-slate-700">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-400 mb-2">Free Developer</h3>
+                        <p class="text-slate-500 text-xs mb-6">Perfect for personal sandboxes & API testing.</p>
+                        <div class="text-4xl font-extrabold font-outfit mb-6">$0 <span class="text-xs text-slate-500 font-normal">/ forever</span></div>
+                        <ul class="space-y-3 text-sm text-slate-400">
+                            <li class="flex items-center"><span class="text-google-green mr-2">✓</span> 100 Daily Operations Limit</li>
+                            <li class="flex items-center"><span class="text-google-green mr-2">✓</span> Google Sheets & Docs Access</li>
+                            <li class="flex items-center"><span class="text-google-green mr-2">✓</span> Standard API Latency</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Premium Plan -->
+                <div class="bg-slate-900/90 p-8 rounded-2xl border-2 border-google-yellow/40 glass-panel flex flex-col justify-between text-left relative shadow-google-yellow/10 shadow-2xl transition-all hover:scale-[1.01]">
+                    <!-- Badge -->
+                    <div class="absolute -top-3 right-6 bg-google-yellow text-slate-950 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                        MOST POPULAR
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-google-yellow mb-2">SaaS Enterprise</h3>
+                        <p class="text-slate-400 text-xs mb-6">Unlimited automated execution for scale.</p>
+                        <div class="text-4xl font-extrabold font-outfit mb-6">$9.99 <span class="text-xs text-slate-400 font-normal">/ month</span></div>
+                        <ul class="space-y-3 text-sm text-slate-200">
+                            <li class="flex items-center"><span class="text-google-yellow mr-2">✦</span> Unlimited Operations</li>
+                            <li class="flex items-center"><span class="text-google-yellow mr-2">✦</span> Auto-rotating Access Tokens</li>
+                            <li class="flex items-center"><span class="text-google-yellow mr-2">✦</span> High Priority Execution Support</li>
+                            <li class="flex items-center"><span class="text-google-yellow mr-2">✦</span> Advanced Workspace Actions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="max-w-4xl mx-auto px-6 py-20 border-t border-slate-900 text-center">
+            <h2 class="font-outfit text-3xl font-extrabold mb-4">Enterprise Integration & Support</h2>
+            <p class="text-slate-400 max-w-xl mx-auto mb-8 font-light leading-relaxed">
+                Need an isolated Docker deployment or custom Google Workspace scopes for your organization? Contact CLLSOFT LLC enterprise support.
+            </p>
+            <a href="mailto:support@cllsoft.online" class="inline-flex items-center justify-center px-6 py-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-sm font-semibold transition-all">
+                📧 Contact CLLSOFT Enterprise
+            </a>
+        </section>
+
+        <!-- Footer -->
+        <footer class="max-w-7xl mx-auto px-6 py-8 border-t border-slate-900/60 text-center text-slate-600 text-xs">
+            <p>&copy; 2026 CLLSOFT LLC. All corporate trademarks of Google, Gmail, Sheets, Docs, and Workspace belong to Google LLC. GSM operates as an independent bridge. All rights reserved.</p>
+        </footer>
+    </div>
+
+
+    <!-- 2. DASHBOARD / CONTROL PANEL SECTION (Visible when authorized) -->
+    <div id="dashboard-section" class="hidden transition-opacity duration-500 max-w-7xl mx-auto px-6 py-8 flex flex-col gap-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6 bg-slate-900/60 border border-slate-800/80 rounded-2xl glass-panel shadow-2xl">
+            <div class="flex items-center space-x-3">
+                <span class="w-3 h-3 bg-google-green rounded-full shadow-[0_0_12px_#34A853] animate-pulse"></span>
+                <h1 class="font-outfit font-extrabold text-xl tracking-wider">GLOBAL SCALABLE MATRIX</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-google-green/10 border border-google-green/30 text-google-green" id="system-status">CONNECTED</span>
+                <!-- Sign Out -->
+                <button onclick="document.cookie='gsm_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'; window.location.reload();" class="text-xs font-semibold px-4 py-2 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all border border-slate-700/40">
+                    Sign Out
+                </button>
             </div>
         </header>
 
         <!-- Main Panel Grid -->
-        <main class="grid-container">
-            <!-- Left Side: System Metrics (Interactive Charts/Stat Boxes) -->
-            <section class="grid-item metrics-panel">
-                <h2 class="section-title">System Metrics Matrix</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Core Load</span>
-                            <span class="stat-icon">⚡</span>
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Side: System Metrics -->
+            <section class="lg:col-span-7 bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 glass-panel flex flex-col gap-6 shadow-2xl">
+                <h2 class="font-outfit text-lg font-bold tracking-wide relative pl-4 border-l-2 border-google-blue">System Metrics Matrix</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl flex flex-col gap-2 hover:border-slate-800 transition-all">
+                        <div class="flex justify-between items-center text-xs text-slate-500">
+                            <span>Core Load</span>
+                            <span>⚡</span>
                         </div>
-                        <div class="stat-value" id="metric-cpu">0.0%</div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="cpu-bar" style="width: 0%"></div>
+                        <div class="text-3xl font-extrabold font-mono" id="metric-cpu">0.0%</div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div id="cpu-bar" class="h-full bg-gradient-to-r from-google-blue to-google-green transition-all duration-1000" style="width: 0%"></div>
                         </div>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Allocated Memory</span>
-                            <span class="stat-icon">💾</span>
+                    <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl flex flex-col gap-2 hover:border-slate-800 transition-all">
+                        <div class="flex justify-between items-center text-xs text-slate-500">
+                            <span>Allocated Memory</span>
+                            <span>💾</span>
                         </div>
-                        <div class="stat-value" id="metric-mem">0.0 GB</div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="mem-bar" style="width: 0%"></div>
+                        <div class="text-3xl font-extrabold font-mono" id="metric-mem">0.0 GB</div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div id="mem-bar" class="h-full bg-gradient-to-r from-google-blue to-google-green transition-all duration-1000" style="width: 0%"></div>
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Active Nodes</span>
-                            <span class="stat-icon">🌐</span>
+                    <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl flex flex-col gap-2 hover:border-slate-800 transition-all">
+                        <div class="flex justify-between items-center text-xs text-slate-500">
+                            <span>Active Nodes</span>
+                            <span>🌐</span>
                         </div>
-                        <div class="stat-value" id="metric-nodes">0</div>
-                        <div class="sub-label">Global Scaled VPS</div>
+                        <div class="text-3xl font-extrabold font-mono" id="metric-nodes">0</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Global Scaled VPS</div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Response Time</span>
-                            <span class="stat-icon">⏱️</span>
+                    <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl flex flex-col gap-2 hover:border-slate-800 transition-all">
+                        <div class="flex justify-between items-center text-xs text-slate-500">
+                            <span>Response Time</span>
+                            <span>⏱️</span>
                         </div>
-                        <div class="stat-value" id="metric-ping">-- ms</div>
-                        <div class="sub-label">API latency check</div>
+                        <div class="text-3xl font-extrabold font-mono" id="metric-ping">-- ms</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">API latency check</div>
                     </div>
                 </div>
 
-                <!-- Event Dispatcher Control Panel -->
-                <div class="control-box">
-                    <h3 class="box-title">Event Matrix Injector</h3>
-                    <div class="form-group">
-                        <label for="event-type">Event Type</label>
-                        <input type="text" id="event-type" placeholder="e.g., USER_LOGIN, TRANSACTION_INIT" value="CUSTOM_EVENT">
+                <!-- Event Injector Control Panel -->
+                <div class="bg-slate-950/20 border border-slate-900/60 rounded-2xl p-5 flex flex-col gap-4">
+                    <h3 class="font-outfit text-sm font-bold text-slate-400">Event Matrix Injector</h3>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Event Type</label>
+                            <input type="text" id="event-type" class="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-google-blue transition-all" value="CUSTOM_EVENT">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">JSON Payload</label>
+                            <textarea id="event-payload" class="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-200 font-mono h-20 resize-none focus:outline-none focus:border-google-blue transition-all">{"message": "Hello from GSM Terminal UI"}</textarea>
+                        </div>
+                        <button id="btn-publish" class="w-full py-3 bg-gradient-to-r from-google-blue to-indigo-600 hover:from-google-blue hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]">
+                            Inject Event into Matrix
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label for="event-payload">JSON Payload</label>
-                        <textarea id="event-payload" placeholder='{"status": "active", "source": "client"}'>{"message": "Hello from GSM Terminal UI"}</textarea>
-                    </div>
-                    <button class="btn btn-primary" id="btn-publish">Inject Event into Matrix</button>
                 </div>
             </section>
 
-            <!-- Right Side: Real-time Event Logger (Asynchronous Feed) -->
-            <section class="grid-item feed-panel">
-                <div class="feed-header">
-                    <h2 class="section-title">Asynchronous Event Stream</h2>
-                    <button class="btn-text" id="btn-clear-feed">Clear Stream</button>
+            <!-- Right Side: Real-time Event Logger -->
+            <section class="lg:col-span-5 bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 glass-panel flex flex-col gap-6 shadow-2xl max-h-[700px]">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-outfit text-lg font-bold tracking-wide relative pl-4 border-l-2 border-google-green">Event Stream</h2>
+                    <button id="btn-clear-feed" class="text-xs text-slate-500 hover:text-google-red font-semibold transition-all">Clear Stream</button>
                 </div>
-                <div class="event-stream" id="event-stream-container">
-                    <div class="stream-placeholder">Waiting for matrix event logs...</div>
+                <div id="event-stream-container" class="flex-grow bg-slate-950/60 border border-slate-900 rounded-xl p-4 overflow-y-auto max-h-[500px] flex flex-col gap-3 font-mono text-xs">
+                    <div class="text-slate-500 italic text-center py-10">Waiting for matrix event logs...</div>
                 </div>
             </section>
         </main>
-
-        <footer class="app-footer">
-            <p>GSM Matrix Suite &bull; V1.0.0-MVP &bull; Geliştirici: AI Architect (Antigravity)</p>
-        </footer>
     </div>
-    
+
+    <!-- Script connection -->
     <script src="app.js"></script>
 </body>
 </html>
