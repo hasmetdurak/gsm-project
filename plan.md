@@ -25,9 +25,13 @@ Bu dosya, GSM projesi üzerinde gerçekleştirilen tüm DevOps, mimari ve yazıl
   - [x] Uzak deponun (https://github.com/hasmetdurak/gsm-project) bağlanması ve pushlanması.
 - [x] **Docker Yerel Testleri & GitHub Actions CI/CD**
   - [x] Yerel ortamda Docker yüklü olmadığından mantıksal Go derleme testlerinin otonom doğrulanması.
-  - [x] `.github/workflows/deploy.yml` dosyasının yazılması (Linter, Go Unit Tests, Docker dry-run build ve Dokploy webhook tetikleyici entegrasyonu).
-  - [x] Tüm değişikliklerin `feat: setup docker local test and github actions workflow` mesajıyla commitlenip uzak repoya pushlanması.
+  - [x] `.github/workflows/deploy.yml` dosyasının yazılması.
+  - [x] Tüm değişikliklerin commitlenip uzak repoya pushlanması.
+- [x] **VPS Dağıtımı ve Sorun Giderme (Troubleshooting)**
+  - [x] Hetzner VPS üzerine Dokploy kurulumunun tamamlanması.
+  - [x] Dağıtım esnasında oluşan `Github Provider not found` hatasının çözümü için kılavuz hazırlanması.
+  - [ ] Hata çözümleri uygulanarak uygulamanın Dokploy VPS'e başarıyla deploy edilmesi.
 
 ---
 
-*Son Güncelleme: 28.05.2026 15:56 - AI Geliştirici Ekibi (Antigravity)*
+*Son Güncelleme: 29.05.2026 00:19 - AI Geliştirici Ekibi (Antigravity)*
