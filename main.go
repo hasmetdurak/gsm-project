@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"gsm/core"
+	"gsm/internal/database"
 	"gsm/server"
 	"os"
 	"os/signal"
@@ -13,17 +14,30 @@ import (
 func main() {
 	println("--- Starting GSM (Global Scalable Matrix) Bootloader ---")
 
+	// 1. PostgreSQL Veritabanı Bağlantısının Kurulması
+	println("[Database] Connecting to PostgreSQL...")
+	if err := database.ConnectPostgres(); err != nil {
+		println("[Database ERROR] Failed to connect to PostgreSQL:", err.Error())
+		println("[Database Warning] Running in offline mode without database features.")
+	} else {
+		defer database.ClosePostgres()
+	}
+
 	// Ana bağlam (context) ve sinyal dinleyici
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// 1. Matrix Engine (Asenkron Çekirdek) Başlatılması
+	// 2. Matrix Engine (Asenkron Çekirdek) Başlatılması
 	engine := core.NewMatrixEngine()
 	engine.Start(ctx)
 	println("[Engine] Matrix Core successfully initialized.")
 
-	// 2. HTTP ve API Sunucusunun Yapılandırılması
+	// 3. HTTP ve API Sunucusunun Yapılandırılması
 	addr := ":8080"
+	if customPort := os.Getenv("PORT"); customPort != "" {
+		addr = ":" + customPort
+	}
+	
 	srv := server.NewServer(addr, engine)
 
 	// Sunucuyu ayrı bir goroutine'de başlatıyoruz
@@ -34,7 +48,7 @@ func main() {
 		}
 	}()
 
-	// 3. Graceful Shutdown (Kibar Kapatma) Yönetimi
+	// 4. Graceful Shutdown (Kibar Kapatma) Yönetimi
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM)
 

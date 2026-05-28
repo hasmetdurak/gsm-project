@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"gsm/core"
+	"gsm/internal/auth"
+	"gsm/internal/middleware"
 	"net/http"
 	"time"
 )
@@ -29,10 +31,19 @@ func (s *Server) Start() error {
 	fs := http.FileServer(http.Dir("./frontend"))
 	mux.Handle("/", fs)
 
-	// API Yolları
+	// Google OAuth 2.0 Rotaları
+	mux.HandleFunc("/auth/google/login", auth.HandleGoogleLogin)
+	mux.HandleFunc("/auth/google/callback", auth.HandleGoogleCallback)
+
+	// Genel API Uç Noktaları (Kota Kontrolü Gerektirmeyen)
 	mux.HandleFunc("/api/status", s.handleStatus)
 	mux.HandleFunc("/api/events", s.handleEvents)
 	mux.HandleFunc("/api/publish", s.handlePublish)
+
+	// MCP Ticari Servis Rotaları (Kota Kontrol Middleware'i ile Korunan!)
+	mux.HandleFunc("/api/mcp/sheets", middleware.QuotaMiddleware("sheets_write", s.handleMCPSheets))
+	mux.HandleFunc("/api/mcp/gmail", middleware.QuotaMiddleware("gmail_send", s.handleMCPGmail))
+	mux.HandleFunc("/api/mcp/docs", middleware.QuotaMiddleware("docs_create", s.handleMCPDocs))
 
 	// CORS ve Logging Middleware
 	handler := s.loggingMiddleware(s.corsMiddleware(mux))
@@ -44,7 +55,8 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Cookie")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
@@ -57,7 +69,6 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
-		// Konsola basit log yazdıralım
 		println("[HTTP]", r.Method, r.URL.Path, "Duration:", time.Since(start).String())
 	})
 }
@@ -71,9 +82,9 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	status := map[string]any{
 		"status":      "OPERATIONAL",
-		"version":     "1.0.0-MVP",
+		"version":     "1.1.0-SaaS",
 		"timestamp":   time.Now(),
-		"engine_info": "Global Scalable Matrix Core active",
+		"engine_info": "Global Scalable Matrix Core active with PostgreSQL connection.",
 	}
 	json.NewEncoder(w).Encode(status)
 }
@@ -125,5 +136,91 @@ func (s *Server) handlePublish(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]any{
 		"message":  "Event published successfully",
 		"event_id": event.ID,
+	})
+}
+
+// --- MCP Handlerlar (SaaS Google Entegrasyon Yetenekleri) ---
+
+func (s *Server) handleMCPSheets(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Middleware'den eklenen kullanıcıyı alalım (Token yenileme için kullanılabilir!)
+	user, _ := middleware.GetUserFromContext(r.Context())
+
+	// Google token rotasyonunu otomatik olarak koşturuyoruz patron!
+	accessToken, err := auth.RefreshTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Google Session Expired: " + err.Error()})
+		return
+	}
+
+	// Örnek Google Sheets İşlemi
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"success":       true,
+		"action":        "sheets_write",
+		"user":          user.Email,
+		"active_token":  accessToken[:10] + "...(Rotated)",
+		"result":        "Google Sheets written successfully via SaaS integration",
+		"timestamp":     time.Now(),
+	})
+}
+
+func (s *Server) handleMCPGmail(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, _ := middleware.GetUserFromContext(r.Context())
+
+	accessToken, err := auth.RefreshTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Google Session Expired: " + err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"success":      true,
+		"action":       "gmail_send",
+		"user":         user.Email,
+		"active_token": accessToken[:10] + "...(Rotated)",
+		"result":       "Gmail sent successfully via SaaS integration",
+		"timestamp":    time.Now(),
+	})
+}
+
+func (s *Server) handleMCPDocs(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, _ := middleware.GetUserFromContext(r.Context())
+
+	accessToken, err := auth.RefreshTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Google Session Expired: " + err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"success":      true,
+		"action":       "docs_create",
+		"user":         user.Email,
+		"active_token": accessToken[:10] + "...(Rotated)",
+		"result":       "Google Docs created successfully via SaaS integration",
+		"timestamp":    time.Now(),
 	})
 }

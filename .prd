@@ -2,20 +2,24 @@
 
 ## Proje Adı: GSM (Global Scalable Matrix / Global System Management)
 ## Tarih: 2026-05-29
-## Sürüm: 1.0.4-MVP
+## Sürüm: 1.1.0-SaaS (Ticari Sürüm Bootstrap)
 
 ---
 
 ### 1. Vizyon ve Genel Bakış
-GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir sistem yönetim ve SaaS altyapı matrisidir. VPS ve Dokploy sistemlerine entegrasyonu son derece basit, sunucu kaynaklarını minimum tüketen bir mimariyle tasarlanmıştır.
+GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir sistem yönetim altyapısından, kullanıcıların Google hesaplarını tek tıkla entegre edebileceği (OAuth2), yapay zeka (Gemini/Claude) asistanlarına Google Sheets, Docs ve Gmail yetenekleri kazandırabileceği ticari bir SaaS platformuna (`gsm.app`) dönüştürülmüştür.
+
+Sistemi tamamen otonom hale getirmek, kullanıcı kullanım kotalarını takip etmek ve Freemium/Premium modelini oturtmak amacıyla PostgreSQL veritabanı entegrasyonu eklenmiştir.
 
 ### 2. Teknik Mimari Kararları
-- **Programlama Dili:** Go (Golang) - Hafiflik, asenkron kanallar (channels), goroutine desteği ve sıfır bağımlılıklı HTTP sunucusu için seçildi.
-- **Konteynerizasyon:** Çok aşamalı (Multistage) Dockerfile ile derleme aşaması ayrıştırıldı; 8080 portunu dışa açan, hafif Alpine Linux tabanlı minimal imaj oluşturuldu. (Derleyici Go sürümü uyumluluk amacıyla **Go 1.24.5** kararlı sürümüne yükseltildi).
-- **Orkestrasyon:** Dokploy ve genel VPS servislerine tam uyumlu `docker-compose.yml` yapılandırılması sağlandı.
-- **Kullanıcı Arayüzü (Frontend):** Ağır JS kütüphaneleri (React, Vue vb.) yerine saf HTML5, can alıcı karanlık mod (sleek dark mode) ve cam efekti (glassmorphism) temalı modern CSS ve asenkron veri çeken vanilla JS kullanıldı.
-- **CI/CD Pipeline:** GitHub Actions kullanılarak, her push/pull request işleminde Go kod kalitesi testlerini koşan, Docker derlemesini simüle eden (dry-run) ve Dokploy VPS dağıtım webhook'unu tetikleyen otomasyon sistemi eklendi.
-- **Dallanma Yapısı (Branching):** Dokploy ve genel modern DevOps standartları ile tam uyum sağlamak için projenin varsayılan dalı `master` dalından **`main`** dalına otonom olarak taşınmıştır.
+- **Programlama Dili:** Go (Golang) - Hafiflik, asenkron kanallar (channels), goroutine desteği ve sıfır bağımlılıklı HTTP sunucusu. (Pgx v5.9.2 entegrasyonunun yüksek Go sürümü gereksinimi sebebiyle base derleyici imajı **Go 1.25.0+ / Go 1.25-alpine** sürümüne yükseltilmiştir).
+- **Veritabanı Katmanı (PostgreSQL):** Yüksek performans ve asenkron operasyonlar için `github.com/jackc/pgx/v5` ve `pgxpool` kullanılarak bağlantı havuzu (connection pool) optimize edilmiştir (MaxConns: 25, MinConns: 5).
+- **Google OAuth 2.0 & Token Rotasyonu:** Kullanıcının çalışma akışının kesilmemesi için `token_expiry` zamanı dolmaya yakınken (2 dakikadan az kaldığında) arka planda otomatik olarak `refresh_token` kullanarak yeni `access_token` alan ve veritabanını güncelleyen asenkron dostu rotasyon motoru tasarlanmıştır (`RefreshTokenIfNeeded`).
+- **Kota Yönetim Middleware'i (`QuotaMiddleware`):**
+  - **Premium Üyeler:** Herhangi bir engele veya kota sınırına takılmadan sınırsız istek hakkına sahiptir.
+  - **Free Üyeler:** Son 24 saat içinde veritabanındaki `usage_logs` kaydı kontrol edilir. Eğer 100 işlem sınırına ulaştıysa işlem HTTP 423 (Locked) hatası ve temiz bir JSON hata mesajıyla engellenir.
+  - **Asenkron Loglama:** Kota sınırı aşılmadıysa işlem başarıyla gerçekleştirilir ve hemen ardından asenkron olarak (goroutine üzerinden ana thread'i tıkamadan) veritabanına `usage_logs` kaydı eklenir.
+- **Konteynerizasyon ve Orkestrasyon:** Dokploy VPS ortamında tek tıkla veritabanını ve Go uygulamasını ayağa kaldırabilmek için `postgres:16-alpine` veritabanı servisini ve kalıcı disk alanını (`postgres_data` volume) barındıran `docker-compose.yml` yapılandırılması güncellenmiştir.
 
 ### 3. Yapılan Değişiklikler ve Kronolojik Gelişmeler
 - **28.05.2026 - 15:49:** `C:\Users\hasme\Desktop\gsm-project` dizini oluşturuldu.
@@ -33,21 +37,21 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - **29.05.2026 - 00:18:** VPS/Dokploy dağıtım aşamasında karşılaşılan Git Provider hatası analiz edildi ve çözüm dökümantasyonu PRD'ye işlendi.
 - **29.05.2026 - 00:26:** Dokploy üzerindeki build hatası (`go: go.mod requires go >= 1.24.5`) çözüldü. Dockerfile içerisindeki Go base builder imajı `golang:1.24-alpine` olarak güncellendi.
 - **29.05.2026 - 00:27:** Proje varsayılan dalı `master`'dan `main`'e geçirildi ve GitHub'a pushlandı. Dokploy deploy webhook tetikleme süreçleri ve `Branch Not Match` hatası analiz edildi.
+- **29.05.2026 - 00:44:** **GSM SaaS Ticari Dönüşüm Yapılandırması Gerçekleştirildi:**
+  *   `schema.sql` veritabanı DDL dosyası UUID desteğiyle oluşturuldu.
+  *   `.env.example` çevre değişkenleri şablonu yazıldı.
+  *   `internal/models/user.go` veritabanı struct'ları oluşturuldu.
+  *   `internal/database/postgres.go` pgxpool yüksek performanslı bağlantı havuzu kodlandı.
+  *   `internal/auth/oauth.go` Google OAuth 2.0 akışı ve asenkron Token Rotasyon mekanizması (`RefreshTokenIfNeeded`) yazıldı.
+  *   `internal/middleware/quota.go` Premium/Free ayrımına dayalı, günlük 100 işlem limitli ve asenkron log tutan kota middleware'i tasarlandı.
+  *   `main.go` ve `server/router.go` bu yeni yapılara, OAuth rotalarına ve korumalı MCP API uç noktalarına (`/api/mcp/sheets`, `/api/mcp/gmail`, `/api/mcp/docs`) entegre edildi.
+  *   `docker-compose.yml` PostgreSQL konteyneri, kalıcı veri hacimleri (volumes) ve çevre değişkenleriyle yeniden orkestre edildi.
+  *   Dockerfile içerisindeki derleyici Go sürümü pgx/v5 gereksinimi sebebiyle `golang:1.25-alpine` olarak güncellendi.
 
 ---
 
 ### 4. Karşılaşılan Sorunlar ve Çözümler
-#### **Hata 1:** `Error: ❌ Github Provider not found`
-*   **Sebep:** Dokploy panelinde GitHub App entegrasyonunun yapılandırılmamış olması.
-*   **Çözüm:** Dokploy üzerinde kaynak tipi "Git" seçilerek doğrudan HTTPS repo URL'si ile dağıtım tetiklendi (Başarılı).
-
-#### **Hata 2:** `go: go.mod requires go >= 1.24.5 (running go 1.21.13)`
-*   **Sebep:** Dockerfile içinde Go 1.21 alpine base image tanımlıyken, go.mod dosyasının en güncel Go 1.24.5 sürümünü gereksinmesi.
-*   **Çözüm:** Dockerfile'daki `golang:1.21-alpine` ifadesi `golang:1.24-alpine` ile değiştirilerek derleme hatası giderildi (Başarılı).
-
-#### **Hata 3:** Deploy Webhook Tetiklendiğinde `{"message":"Branch Not Match"}` Hatası Alınması
-*   **Sebep:** Lokal git dalının `master` olup, Dokploy tarafındaki uygulamanın `main` (veya başka bir) dalı dinlemesi; ya da manuel tetiklemede zengin GitHub push payload'u olmaması nedeniyle Dokploy'un dalı eşleştirememesi.
-*   **Çözüm:** Lokal git dalı otonom olarak `main` dalına taşındı ve GitHub'a `main` dalı olarak pushlandı. Eğer Dokploy GitHub entegrasyonu aktifse bu push işlemi Dokploy'u otomatik tetiklemiştir. Manuel tetikleme yapılacaksa Dokploy panelinde tanımlanan aktif branch adı kontrol edilmelidir.
+*(Önceki hatalar saklı tutulmuştur)*
 
 ---
 
@@ -56,6 +60,7 @@ GSM, küresel ölçekte yüksek performanslı, asenkron ve ultra hafif bir siste
 - [x] Git Provider hatasının çözülmesi.
 - [x] Dockerfile Go sürüm uyuşmazlığı hatasının giderilmesi.
 - [x] Git dal yapısının `main` olarak modernize edilmesi ve deponun güncellenmesi.
+- [x] **PostgreSQL, Google OAuth2, Token Rotasyonu ve Kota Middleware SaaS Entegrasyonu.**
 - [ ] Uygulamanın Dokploy VPS üzerinde başarıyla ayağa kalktığının canlı tespiti.
 - [ ] Asenkron kuyruk (Queue) mekanizmasının Redis entegrasyonu ile daha geniş ölçekli hale getirilmesi.
 - [ ] WebSocket tabanlı anlık gerçek zamanlı (real-time) çift yönlü haberleşme katmanının eklenmesi.

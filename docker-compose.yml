@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: gsm_postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gsm_user
+      POSTGRES_PASSWORD: gsm_password
+      POSTGRES_DB: gsm_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - gsm-network
+
   gsm-service:
     build:
       context: .
@@ -9,10 +29,17 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    depends_on:
+      - postgres-db
     environment:
       - TZ=Europe/Istanbul
       - PORT=8080
       - ENV=production
+      - DATABASE_URL=postgres://gsm_user:gsm_password@postgres-db:5432/gsm_db?sslmode=disable
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL}
+      - JWT_SECRET=${JWT_SECRET}
     logging:
       driver: "json-file"
       options:
@@ -20,6 +47,10 @@ services:
         max-file: "3"
     networks:
       - gsm-network
+
+volumes:
+  postgres_data:
+    driver: local
 
 networks:
   gsm-network:
