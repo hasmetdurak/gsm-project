@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSM // Matrix Control Center</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="pulse-indicator"></span>
+                <h1>GLOBAL SCALABLE MATRIX</h1>
+            </div>
+            <div class="status-badge" id="system-status">
+                <span class="badge-text">CONNECTING</span>
+            </div>
+        </header>
+
+        <!-- Main Panel Grid -->
+        <main class="grid-container">
+            <!-- Left Side: System Metrics (Interactive Charts/Stat Boxes) -->
+            <section class="grid-item metrics-panel">
+                <h2 class="section-title">System Metrics Matrix</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Core Load</span>
+                            <span class="stat-icon">⚡</span>
+                        </div>
+                        <div class="stat-value" id="metric-cpu">0.0%</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="cpu-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Allocated Memory</span>
+                            <span class="stat-icon">💾</span>
+                        </div>
+                        <div class="stat-value" id="metric-mem">0.0 GB</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="mem-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Active Nodes</span>
+                            <span class="stat-icon">🌐</span>
+                        </div>
+                        <div class="stat-value" id="metric-nodes">0</div>
+                        <div class="sub-label">Global Scaled VPS</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Response Time</span>
+                            <span class="stat-icon">⏱️</span>
+                        </div>
+                        <div class="stat-value" id="metric-ping">-- ms</div>
+                        <div class="sub-label">API latency check</div>
+                    </div>
+                </div>
+
+                <!-- Event Dispatcher Control Panel -->
+                <div class="control-box">
+                    <h3 class="box-title">Event Matrix Injector</h3>
+                    <div class="form-group">
+                        <label for="event-type">Event Type</label>
+                        <input type="text" id="event-type" placeholder="e.g., USER_LOGIN, TRANSACTION_INIT" value="CUSTOM_EVENT">
+                    </div>
+                    <div class="form-group">
+                        <label for="event-payload">JSON Payload</label>
+                        <textarea id="event-payload" placeholder='{"status": "active", "source": "client"}'>{"message": "Hello from GSM Terminal UI"}</textarea>
+                    </div>
+                    <button class="btn btn-primary" id="btn-publish">Inject Event into Matrix</button>
+                </div>
+            </section>
+
+            <!-- Right Side: Real-time Event Logger (Asynchronous Feed) -->
+            <section class="grid-item feed-panel">
+                <div class="feed-header">
+                    <h2 class="section-title">Asynchronous Event Stream</h2>
+                    <button class="btn-text" id="btn-clear-feed">Clear Stream</button>
+                </div>
+                <div class="event-stream" id="event-stream-container">
+                    <div class="stream-placeholder">Waiting for matrix event logs...</div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>GSM Matrix Suite &bull; V1.0.0-MVP &bull; Geliştirici: AI Architect (Antigravity)</p>
+        </footer>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
